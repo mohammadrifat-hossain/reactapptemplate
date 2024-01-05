@@ -1,5 +1,7 @@
-import { createSlice} from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice} from '@reduxjs/toolkit'
 import jwtDecode from 'jwt-decode'
+import axios from 'axios'
+import {base_url} from '../../utils/Config'
 
 const decodeToken = (token) =>{
     if(token){
@@ -13,6 +15,16 @@ const decodeToken = (token) =>{
         }
     }
 }
+
+export const login_user = createAsyncThunk('auth/login_user', async(info,{rejectWithValue,fulfillWithValue})=>{
+    // console.log(info);
+    try {
+        const {data} = await axios.post(`${base_url}/login`,info)
+        console.log(data);
+    } catch (error) {
+        console.log(error);
+    }
+})
 
 
 const AuthReducer = createSlice({
@@ -28,6 +40,18 @@ const AuthReducer = createSlice({
             state.errorMessage = ''
             state.successMessage = ''
         }
+    },
+    extraReducers:(builder) =>{
+        builder
+            .addCase(login_user.pending, (state,{payload})=>{
+                state.loader = true
+            })
+            .addCase(login_user.rejected, (state,{payload})=>{
+                state.loader = false
+            })
+            .addCase(login_user.fulfilled, (state,{payload})=>{
+                state.loader = false
+            })
     }
 })
 
